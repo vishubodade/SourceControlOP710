@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <DUT Name="udt_HDL_HandlingToCell" Id="{0925af26-4c40-47d5-903a-403406266956}">
+    <Declaration><![CDATA[TYPE udt_HDL_HandlingToCell :
+STRUCT
+	
+(* HDL Data *)
+    Status      : WORD; // 0 Auto -- 1 Auto Startup -- 2 Manual -- 3 Error -- 4 LineMode -- 5 PowerOn -- 6 EnergySave -- 7 SafeOk
+    part        : udt_HDL_PartData; // part
+    
+    (* Job Handshake Requests & Logic *)
+    GateOpenRequest     : BOOL;
+    GateCloseRequest    : BOOL;
+    PickJobProceed      : BOOL;
+    DropJobProceed      : BOOL;
+    
+    (* Progress Feedback *)
+    RaiseFinished1      : BOOL;
+    RaiseFinished2      : BOOL;
+    ReduceFinished1     : BOOL;
+    ReduceFinished2     : BOOL;
+    
+    (* Status/Confirmation *)
+    PickJobOK           : BOOL;
+    DropJobOK           : BOOL;
+    InArea              : BOOL;
+    PickDropProceed     : BOOL;
+    
+    (* Gripper Acknowledge *)
+    Gripper1ClosedAck   : BOOL;
+    Gripper1OpenedAck   : BOOL;
+    Gripper2ClosedAck   : BOOL;
+    Gripper2OpenedAck   : BOOL;
+    
+    (* Spare/Auxiliary *)
+    FeatureBit6         : BOOL;
+    FeatureBit7         : BOOL;
+    PickEnable          : BOOL;
+    DropEnable          : BOOL;
+    
+    (* Process Data *)
+    Types               : USINT;
+    ActiveCell          : USINT;
+    Cooling_Time_Buffer : DINT;
+    FB_Cooling_Time     : DINT;
+END_STRUCT
+END_TYPE
+
+
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

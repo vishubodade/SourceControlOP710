@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="Clamping" Id="{8e497666-5599-4a72-883a-47ed01f62d0f}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK Clamping
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+// cc1 clamp 1_3
+IF Memory.CC1_Clamp_FwdCmd THEN
+    Memory.CC1_Clamp_Rev := FALSE;
+ELSIF Memory.CC1_Clamp_RevCmd THEN
+    Memory.CC1_Clamp_Fwd := FALSE;
+END_IF;
+
+IF IO.FixtureOutput.o_CC1_CLAMPING_UNIT1_3_WP THEN
+    Memory.CC1_Clamp_Fwd := TRUE;
+END_IF;
+
+IF IO.FixtureOutput.o_CC1_CLAMPING_UNIT1_3_HP THEN
+    Memory.CC1_Clamp_Rev := TRUE;
+END_IF;
+
+// cc2 clamp 2_3
+IF Memory.CC2_Clamp_FwdCmd THEN
+    Memory.CC2_Clamp_Rev := FALSE;
+ELSIF Memory.CC2_Clamp_RevCmd THEN
+    Memory.CC2_Clamp_Fwd := FALSE;
+END_IF;
+
+IF IO.FixtureOutput.o_CC2_CLAMPING_UNIT2_3_WP THEN
+    Memory.CC2_Clamp_Fwd := TRUE;
+END_IF;
+
+IF IO.FixtureOutput.o_CC2_CLAMPING_UNIT2_3_HP THEN
+    Memory.CC2_Clamp_Rev := TRUE;
+END_IF;
+
+// cc3 clamp 3_3
+IF Memory.CC3_Clamp_FwdCmd THEN
+    Memory.CC3_Clamp_Rev := FALSE;
+ELSIF Memory.CC3_Clamp_RevCmd THEN
+    Memory.CC3_Clamp_Fwd := FALSE;
+END_IF;
+
+IF IO.FixtureOutput.o_CC3_CLAMPING_UNIT3_3_WP THEN
+    Memory.CC3_Clamp_Fwd := TRUE;
+END_IF;
+
+IF IO.FixtureOutput.o_CC3_CLAMPING_UNIT3_3_HP THEN
+    Memory.CC3_Clamp_Rev := TRUE;
+END_IF;
+
+// cc4 clamp 4_3
+IF Memory.CC4_Clamp_FwdCmd THEN
+    Memory.CC4_Clamp_Rev := FALSE;
+ELSIF Memory.CC4_Clamp_RevCmd THEN
+    Memory.CC4_Clamp_Fwd := FALSE;
+END_IF;
+
+IF IO.FixtureOutput.o_CC4_CLAMPING_UNIT4_3_WP THEN
+    Memory.CC4_Clamp_Fwd := TRUE;
+END_IF;
+
+IF IO.FixtureOutput.o_CC4_CLAMPING_UNIT4_3_HP THEN
+    Memory.CC4_Clamp_Rev := TRUE;
+END_IF;
+
+// CC5 clamp 5_1
+IF Memory.CC5_Clamp_FwdCmd THEN
+    Memory.CC5_Clamp_Rev := FALSE;
+ELSIF Memory.CC5_Clamp_RevCmd THEN
+    Memory.CC5_Clamp_Fwd := FALSE;
+END_IF;
+
+IF IO.FixtureOutput.o_CC5_CLAMPING_UNIT5_1_WP THEN
+    Memory.CC5_Clamp_Fwd := TRUE;
+END_IF;
+
+IF IO.FixtureOutput.o_CC5_CLAMPING_UNIT5_1_HP THEN
+    Memory.CC5_Clamp_Rev := TRUE;
+END_IF;
+
+// CC6 clamp 6_1
+IF Memory.CC6_Clamp_FwdCmd THEN
+    Memory.CC6_Clamp_Rev := FALSE;
+ELSIF Memory.CC6_Clamp_RevCmd THEN
+    Memory.CC6_Clamp_Fwd := FALSE;
+END_IF;
+
+IF IO.FixtureOutput.o_CC6_CLAMPING_UNIT6_1_WP THEN
+    Memory.CC6_Clamp_Fwd := TRUE;
+END_IF;
+
+IF IO.FixtureOutput.o_CC6_CLAMPING_UNIT6_1_HP THEN
+    Memory.CC6_Clamp_Rev := TRUE;
+END_IF;
+]]></ST>
+    </Implementation>
+    <LineIds Name="Clamping">
+      <LineId Id="58" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="46" Count="11" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="61" Count="12" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="76" Count="12" />
+      <LineId Id="74" Count="1" />
+      <LineId Id="89" Count="12" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="102" Count="27" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="19" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

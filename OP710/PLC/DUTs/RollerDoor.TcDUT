@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <DUT Name="RollerDoor" Id="{260a753d-005e-4644-a7cc-290363e1a081}">
+    <Declaration><![CDATA[TYPE RollerDoor :
+STRUCT
+	
+i_RD_Sensor_Open:BOOL;
+i_RD_Sensor_Close:BOOL;
+o_RD_Open:BOOL;
+o_RD_Close:BOOL;
+
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="RoolerDoor" Id="{45b0604a-f79d-46c0-bdd8-9da963205c38}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK RoolerDoor
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Roller Door
+IF Memory.RD1_OpenCmd OR RobotInterface.HDL_HandlingToCell.GateOpenRequest THEN
+    Memory.RD1_Close := FALSE;
+ELSIF Memory.RD1_CloseCmd OR RobotInterface.HDL_HandlingToCell.GateCloseRequest THEN
+    Memory.RD1_Open := FALSE;
+END_IF;
+
+IF IO.RD1.i_RD_Sensor_Open THEN
+    Memory.RD1_Open := TRUE;
+END_IF;
+
+IF IO.RD1.i_RD_Sensor_Close  THEN
+    Memory.RD1_Close := TRUE;
+END_IF;
+
+// Roller Door 2
+IF Memory.RD2_OpenCmd THEN
+    Memory.RD2_Close := FALSE;
+ELSIF Memory.RD2_CloseCmd THEN
+    Memory.RD2_Open := FALSE;
+END_IF;
+
+IF IO.RD2.i_RD_Sensor_Open THEN//opened
+    Memory.RD2_Open := TRUE;
+END_IF;
+
+IF IO.RD2.i_RD_Sensor_Close  THEN//closed
+    Memory.RD2_Close := TRUE;
+END_IF;]]></ST>
+    </Implementation>
+    <LineIds Name="RoolerDoor">
+      <LineId Id="10" Count="3" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="15" Count="7" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="25" Count="13" />
+      <LineId Id="24" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <DUT Name="udt_HDL_CellToHandling" Id="{c122cee6-59cc-47c1-8640-b0aee4236d9f}">
+    <Declaration><![CDATA[TYPE udt_HDL_CellToHandling :
+STRUCT
+    (* Cell state *)
+    Status      : WORD; // 0: Auto, 2: Manual, 3: Error
+    Time_Stamp  : DATE_AND_TIME;
+    part        : udt_HDL_PartData; // part
+    
+    (* Job Handshake *)
+    Request             : USINT; // 20: Pick, 10: Drop
+    RequestPartType     : BOOL;
+    GateOpened          : BOOL;
+    GateClosed          : BOOL;
+    FixtureReady        : BOOL;
+    (* Progress Feedback *)
+	RaiseEnable1        : BOOL;
+    RaiseEnable2        : BOOL;
+    ReduceEnable1       : BOOL;
+    ReduceEnable2       : BOOL;
+     (* Status/Confirmation *)
+	PickJobAck          : BOOL;
+    DropJobAck          : BOOL;
+    Hold                : BOOL;
+    (* Gripper Acknowledge *)
+	Gripper1ReadyToClose : BOOL;
+    Gripper1ReadyToOpen  : BOOL;
+    Gripper2ReadyToClose : BOOL;
+    Gripper2ReadyToOpen  : BOOL;
+    FeatureBit6         : BOOL;
+    FeatureBit7         : BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

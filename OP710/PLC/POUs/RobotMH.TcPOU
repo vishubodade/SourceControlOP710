@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="RobotMH" Id="{dac3756b-b379-4110-9a8e-3d92c7e97832}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK RobotMH
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+    tGateOpen : TON;
+    tDoorWait : TON;
+    tGripClose : TON;
+    tGripOpen : TON;
+    tDropWait : TON;
+    tReturnHome : TON;
+	nState: INT;
+	CycleCount : INT := 0;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+IF Memory.AutoMode THEN
+CASE nState OF
+
+    0: (* WAIT FOR PART & PERMISSION *)
+        RobotInterface.RobotAtHome := TRUE;
+        RobotInterface.HDL_HandlingToCell.PickJobOK := FALSE;
+        RobotInterface.HDL_HandlingToCell.Gripper1ClosedAck := FALSE;
+        RobotInterface.HDL_HandlingToCell.Gripper1OpenedAck := TRUE;
+
+        IF Memory.In_Welding_Cycle_Complete 
+           AND WeldRobotInterface.RobotAtHome 
+           AND IO.RD1.i_RD_Sensor_Open 
+           AND (Memory.Stat_Parts_Lvl1_Present OR Memory.Stat_Parts_Lvl2_Present) THEN
+            RobotInterface.HDL_HandlingToCell.PickEnable := TRUE;
+            RobotInterface.HDL_HandlingToCell.InArea := TRUE;
+            RobotInterface.HDL_HandlingToCell.PickDropProceed := TRUE;
+            nState := 10;
+        END_IF;
+
+    10: (* GRIPPER ACTION *)
+        RobotInterface.HDL_HandlingToCell.PickJobProceed := TRUE;
+        tGripClose(IN := NOT tGripClose.q, PT := T#2S);
+        RobotInterface.HDL_HandlingToCell.Gripper1ClosedAck := TRUE;
+        RobotInterface.HDL_HandlingToCell.Gripper1OpenedAck := FALSE;
+        RobotInterface.RobotAtHome := FALSE;
+
+        IF tGripClose.Q THEN
+            nState := 20;
+        END_IF;
+
+    20: (* VERIFY GRIPPER & CLEARANCE *)
+        IF RobotInterface.HDL_HandlingToCell.Gripper1ClosedAck THEN
+            RobotInterface.HDL_HandlingToCell.PickJobProceed := FALSE;
+            RobotInterface.HDL_HandlingToCell.PickEnable := FALSE;
+            RobotInterface.HDL_HandlingToCell.PickJobOK := TRUE;
+            RobotInterface.HDL_HandlingToCell.InArea := FALSE;
+            RobotInterface.HDL_HandlingToCell.DropEnable := TRUE;
+
+            IF Memory.Out_Robot_Start_Unload_1 AND IO.Turn.o_Turn_REV_SENSOR THEN
+                Memory.Stat_Parts_Lvl1_Present := FALSE;
+            END_IF;
+            IF Memory.Out_Robot_Start_Unload_2 AND IO.Turn.o_Turn_FWD_SENSOR THEN
+                Memory.Stat_Parts_Lvl2_Present := FALSE;
+            END_IF;
+
+            IF NOT Memory.Stat_Parts_Lvl1_Present OR NOT Memory.Stat_Parts_Lvl2_Present THEN
+                nState := 30;
+            END_IF;
+        END_IF;
+
+    30: (* WAIT FOR PART & PERMISSION OF DROP *)
+        IF RobotInterface.HDL_HandlingToCell.DropEnable AND NOT RobotInterface.HDL_HandlingToCell.DropJobOK THEN
+            RobotInterface.HDL_HandlingToCell.InArea := TRUE;
+            tDropWait(IN := NOT tDropWait.q, PT := T#2S);
+            IF tDropWait.Q THEN
+                nState := 40;
+           END_IF;
+        END_IF;
+
+    40: (* WAIT FOR DROP *)
+        IF RobotInterface.HDL_HandlingToCell.InArea AND RobotInterface.HDL_HandlingToCell.PickDropProceed THEN
+            tDropWait(IN := FALSE);
+            nState := 50;
+        END_IF;
+
+    50: (* GRIPPER ACTION *)
+        RobotInterface.HDL_HandlingToCell.DropJobProceed := TRUE;
+        tGripOpen(IN := TRUE, PT := T#2S);
+        RobotInterface.HDL_HandlingToCell.Gripper1OpenedAck := TRUE;
+        RobotInterface.HDL_HandlingToCell.Gripper1ClosedAck := FALSE;
+        nState := 60;
+
+    60: (* VERIFY GRIPPER & CLEARANCE *)
+        IF RobotInterface.HDL_HandlingToCell.Gripper1OpenedAck THEN
+            RobotInterface.HDL_HandlingToCell.DropJobProceed := FALSE;
+            tReturnHome(IN := NOT tReturnHome.Q, PT := T#1S);
+       IF tReturnHome.Q THEN
+		  nState := 70;
+	END_IF;
+            RobotInterface.RobotAtHome := TRUE;
+            RobotInterface.HDL_HandlingToCell.InArea := FALSE;
+        END_IF;
+
+    70: (* JOB COMPLETE *)
+        RobotInterface.HDL_HandlingToCell.PickJobOK := TRUE;
+
+        CycleCount := CycleCount + 1; // increment cycle count
+
+        IF CycleCount < 2 THEN
+            nState := 0; // repeat pick-drop
+        ELSE
+            CycleCount := 0; // reset after 2 cycles
+            nState := 0;     // or go to idle state
+        END_IF;
+
+END_CASE;
+
+ELSE
+
+// Manual homing logic
+IF HMI.Home THEN
+    RobotInterface.RobotAtHome := TRUE;
+    RobotInterface.HDL_HandlingToCell.Gripper1OpenedAck := TRUE;
+    RobotInterface.HDL_HandlingToCell.Gripper1ClosedAck := FALSE;
+    RobotInterface.HDL_HandlingToCell.InArea := FALSE;
+    nState := 0; // reset state machine to idle
+END_IF;
+END_IF;]]></ST>
+    </Implementation>
+    <LineIds Name="RobotMH">
+      <LineId Id="323" Count="77" />
+      <LineId Id="420" Count="1" />
+      <LineId Id="401" Count="16" />
+      <LineId Id="446" Count="0" />
+      <LineId Id="418" Count="0" />
+      <LineId Id="437" Count="8" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

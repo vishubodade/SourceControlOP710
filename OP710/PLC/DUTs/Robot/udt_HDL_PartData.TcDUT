@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <DUT Name="udt_HDL_PartData" Id="{2b238a6e-c541-437e-9e7a-7e0d4446560d}">
+    <Declaration><![CDATA[TYPE udt_HDL_PartData :
+STRUCT
+PartId	:DINT; //Unique Part Id (DMC Serial Number)
+State	:BOOL; //Part state 0=OK, 1=NOK
+Types :	BOOL;// Part type 1=Long, 0=Short
+Exists	:BOOL; //Part exist
+
+
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="WeldRobot" Id="{338a49ce-7fe6-426d-b966-c9643774b1b2}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK WeldRobot
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	nState: INT;
+	tWeldStart: TON;
+	tWeldDuration: TON;
+	tReturnHome: TON;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF Memory.AutoMode THEN
+CASE nState OF
+    0: (* WAIT FOR PART & PERMISSION *)
+
+        IF IO.RD2.i_RD_Sensor_Close AND IO.TurnTableOutput.o_TurnTable_FWD_SENSOR AND (Memory.Stat_Parts_Lvl1_Present AND Memory.Stat_Parts_Lvl2_Present) AND Memory.AllClampWP THEN
+				Memory.In_Welding_Cycle_Complete:=FALSE;
+            WeldRobotInterface.WeldToCell.PickEnable := TRUE;
+            WeldRobotInterface.WeldToCell.PickJobOK := FALSE;
+            WeldRobotInterface.WeldToCell.InArea := TRUE;
+            WeldRobotInterface.WeldToCell.PickDropProceed := TRUE;
+            nState := 10;
+        END_IF;
+
+    10: (* JOB COMPLETE - PREPARE FOR WELD *)
+        IF RobotInterface.RobotAtHome THEN
+            WeldRobotInterface.WeldToCell.PickJobOK := TRUE;
+            WeldRobotInterface.WeldToCell.DropJobOK := TRUE;
+            nState := 20; // go to weld sequence
+        END_IF;
+
+    20: (* MOVE TO WELD POSITION *)
+         WeldRobotInterface.RobotAtWeldPosition :=TRUE;
+		 	WeldRobotInterface.RobotAtHome:=FALSE;
+            tWeldStart(IN:=NOT tWeldStart.Q, PT:=T#5S); // short delay before weld
+ IF    tWeldStart.Q THEN       
+ nState := 30;
+        END_IF;
+
+    30: (* START WELDING *)
+       
+            WeldRobotInterface.TorchOn := TRUE;
+            tWeldDuration(IN:=NOT tWeldDuration.Q, PT:=T#5S); // weld for 5 seconds
+    IF  tWeldDuration.Q THEN     
+  nState := 40;
+     END_IF; 
+
+    40: (* WELDING IN PROGRESS *)
+       
+            WeldRobotInterface.TorchOn := FALSE;
+			
+            tWeldDuration(IN:=FALSE);
+          
+		  nState := 50;
+       
+
+    50: (* RETURN HOME AFTER WELD *)
+        tReturnHome(IN:= NOT tReturnHome.q, PT:=T#5S);
+		WeldRobotInterface.RobotAtHome:=TRUE;
+		WeldRobotInterface.RobotAtWeldPosition :=FALSE;
+		Memory.In_Welding_Cycle_Complete:=TRUE;
+        IF tReturnHome.Q AND NOT Memory.Out_Robot_Start_Unload_2 THEN
+			
+            nState := 0; // reset for next cycle
+        END_IF;
+END_CASE;
+ELSE
+
+// Manual homing logic
+IF HMI.Home THEN
+    WeldRobotInterface.RobotAtHome := TRUE;
+		WeldRobotInterface.RobotAtWeldPosition :=FALSE;
+		Memory.In_Welding_Cycle_Complete:=FALSE;
+		      WeldRobotInterface.TorchOn := FALSE;
+    nState := 0; // reset state machine to idle
+END_IF;
+END_IF;]]></ST>
+    </Implementation>
+    <LineIds Name="WeldRobot">
+      <LineId Id="64" Count="0" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="13" Count="5" />
+      <LineId Id="21" Count="9" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="31" Count="1" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="33" Count="6" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="40" Count="4" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="45" Count="1" />
+      <LineId Id="104" Count="0" />
+      <LineId Id="47" Count="3" />
+      <LineId Id="61" Count="1" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="52" Count="2" />
+      <LineId Id="91" Count="4" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

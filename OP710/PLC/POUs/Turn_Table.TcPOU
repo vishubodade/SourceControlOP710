@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="Turn_Table" Id="{dce6177d-056a-4d74-a031-d1c376a3bb20}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK Turn_Table
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Homing sequence
+IF NOT Memory.TurnTableRefDone OR Memory.TurnTableRef THEN
+    Memory.TurnTableFwdCmd := TRUE;   // drive forward until reference
+    IF IO.TurnTableOutput.o_TurnTable_REF_SENSOR THEN
+        Memory.TurnTableFwdCmd := FALSE;
+        Memory.TurnTableRefDone := TRUE;   // reference complete
+    END_IF;
+END_IF;
+
+// Forward rotation
+IF Memory.TurnTableFwdCmd AND Memory.TurnTableRefDone THEN
+    Memory.TurnTableRev := FALSE;   // interlock
+END_IF;
+
+IF IO.TurnTableOutput.o_TurnTable_FWD_SENSOR THEN
+    Memory.TurnTableFwd := TRUE;
+END_IF;
+
+// Reverse rotation
+IF Memory.TurnTableRevCmd AND Memory.TurnTableRefDone THEN
+    Memory.TurnTableFwd := FALSE;   // interlock
+END_IF;
+
+IF IO.TurnTableOutput.o_TurnTable_REV_SENSOR THEN
+    Memory.TurnTableRev := TRUE;
+END_IF;
+]]></ST>
+    </Implementation>
+    <LineIds Name="Turn_Table">
+      <LineId Id="10" Count="25" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

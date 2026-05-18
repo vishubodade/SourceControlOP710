@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <GVL Name="WeldRobotInterface" Id="{eb489cd0-8462-4f91-a0b6-0c743a5066f0}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	CellToWeld:udt_HDL_CellToHandling;
+	WeldToCell:udt_HDL_HandlingToCell;
+RobotAtWeldPosition:BOOL;
+RobotAtDropPosition:BOOL;
+RobotAtHome:BOOL;
+TorchOn:bool;
+
+
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

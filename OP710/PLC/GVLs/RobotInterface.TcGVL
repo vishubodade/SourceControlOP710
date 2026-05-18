@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <GVL Name="RobotInterface" Id="{8658d946-7874-42f2-9d2b-b105c9d18d29}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	HDL_CellToHandling:udt_HDL_CellToHandling;
+	HDL_HandlingToCell:udt_HDL_HandlingToCell;
+RobotAtPickPosition:BOOL;
+RobotAtDropPosition:BOOL;
+RobotAtHome:BOOL;
+
+
+
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

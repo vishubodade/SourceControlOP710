@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="MAIN" Id="{06cb9cdf-00f4-4974-bbbc-0941b7f466e4}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	
+	Call_Fb_Idb: Call_Fb;
+	Fixture_Idb: Clamping;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Call_Fb_Idb();
+
+Fixture_Idb();]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="2" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

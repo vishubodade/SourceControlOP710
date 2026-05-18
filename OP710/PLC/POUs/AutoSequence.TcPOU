@@ -1,0 +1,204 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="AutoSequence" Id="{0bb74514-dfbd-4542-86c3-6675261338c5}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK AutoSequence
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	
+	iStep: INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// AUTO SEQUENCE
+IF Memory.AutoMode THEN
+CASE iStep OF
+    0:  // BASIC POSITION (Home)
+        // Reset all Clamps to Home Position
+		Memory.RD2_OpenCmd := TRUE; Memory.RD2_CloseCmd := FALSE;
+		Memory.RD1_OpenCmd := FALSE; Memory.RD1_CloseCmd := TRUE;
+        Memory.CC1_Clamp_RevCmd := TRUE; Memory.CC1_Clamp_FwdCmd := FALSE;
+        Memory.CC2_Clamp_RevCmd := TRUE; Memory.CC2_Clamp_FwdCmd := FALSE;
+        Memory.CC3_Clamp_RevCmd := TRUE; Memory.CC3_Clamp_FwdCmd := FALSE;
+        Memory.CC4_Clamp_RevCmd := TRUE; Memory.CC4_Clamp_FwdCmd := FALSE;
+        Memory.CC5_Clamp_RevCmd := TRUE; Memory.CC5_Clamp_FwdCmd := FALSE;
+        Memory.CC6_Clamp_RevCmd := TRUE; Memory.CC6_Clamp_FwdCmd := FALSE;
+        Memory.TurnTableRevCmd:=TRUE;    Memory.TurnTableFwdCmd:=FALSE;
+        // Wait for Turn Table at 0 deg (Home)
+		Memory.TurnRevCmd := TRUE; Memory.TurnFwdCmd := FALSE; 
+		HMI.ReadyForLoad:=TRUE;
+        IF IO.TurnTableOutput.o_TurnTable_REV_SENSOR AND IO.Turn.o_Turn_REV_SENSOR AND IO.RD1.i_RD_Sensor_Close AND IO.RD2.i_RD_Sensor_Open THEN 
+            iStep := 10; 
+        END_IF;
+
+    10: // LOADING PART 1 (B1-B7 & B15-B21)
+        IF Memory.Stat_Parts_Lvl1_Present AND Memory.In_Operator_Outside_Cell THEN 
+		
+            iStep := 20;
+        END_IF;
+
+    20: // CLAMPING 1 & ROTATION (50 deg)
+        IF Memory.In_PalmButton_Pushed AND  Memory.In_Operator_Outside_Cell AND IO.TurnTableOutput.o_TurnTable_REV_SENSOR AND  IO.RD1.i_RD_Sensor_Close AND IO.RD2.i_RD_Sensor_Open THEN 
+            // Set Fwd, Reset Rev
+            Memory.CC1_Clamp_FwdCmd := TRUE; Memory.CC1_Clamp_RevCmd := FALSE;
+            Memory.CC3_Clamp_FwdCmd := TRUE; Memory.CC3_Clamp_RevCmd := FALSE;
+            Memory.CC5_Clamp_FwdCmd := TRUE; Memory.CC5_Clamp_RevCmd := FALSE;
+            
+            // Wait for WP Feedback
+            IF IO.FixtureOutput.o_CC1_CLAMPING_UNIT1_3_WP AND 
+               IO.FixtureOutput.o_CC3_CLAMPING_UNIT3_3_WP AND 
+               IO.FixtureOutput.o_CC5_CLAMPING_UNIT5_1_WP THEN
+               
+                Memory.TurnFwdCmd := TRUE; Memory.TurnRevCmd := FALSE;
+                
+                IF IO.Turn.o_Turn_FWD_SENSOR THEN
+                    iStep := 30;
+                END_IF;
+            END_IF;
+        END_IF;
+
+    30: // LOADING PART 2 (B8-B14 & B22-B28)
+        IF Memory.In_PalmButton_Pushed AND Memory.Stat_Parts_Lvl2_Present AND Memory.In_Operator_Outside_Cell THEN
+            Memory.RD2_CloseCmd := TRUE; Memory.RD2_OpenCmd := FALSE;
+            IF IO.RD2.i_RD_Sensor_Close THEN
+                iStep := 40;
+					HMI.ReadyForLoad:=FALSE;
+            END_IF;
+        END_IF;
+
+    40: // CLAMPING 2 & WELDING CYCLE
+
+
+		Memory.CC2_Clamp_FwdCmd := TRUE; Memory.CC2_Clamp_RevCmd := FALSE;
+        Memory.CC4_Clamp_FwdCmd := TRUE; Memory.CC4_Clamp_RevCmd := FALSE;
+        Memory.CC6_Clamp_FwdCmd := TRUE; Memory.CC6_Clamp_RevCmd := FALSE;
+     
+        IF IO.FixtureOutput.o_CC2_CLAMPING_UNIT2_3_WP AND
+           IO.FixtureOutput.o_CC4_CLAMPING_UNIT4_3_WP AND
+           IO.FixtureOutput.o_CC6_CLAMPING_UNIT6_1_WP THEN
+           
+            Memory.TurnTableFwdCmd := TRUE; // Start 180 deg rotation
+             Memory.TurnTableRevCmd:=FALSE;
+            IF WeldRobotInterface.RobotAtHome AND Memory.In_Welding_Cycle_Complete  THEN
+                iStep := 50;
+            END_IF;
+        END_IF;
+
+    50: // RETURN TO 0° & UNCLAMP 1
+        Memory.TurnRevCmd := TRUE; Memory.TurnFwdCmd := FALSE;
+        
+        IF IO.Turn.o_Turn_REV_SENSOR AND  Memory.In_Welding_Cycle_Complete THEN
+            // Open Part 1 Clamps
+            Memory.CC1_Clamp_RevCmd := TRUE; Memory.CC1_Clamp_FwdCmd := FALSE;
+            Memory.CC3_Clamp_RevCmd := TRUE; Memory.CC3_Clamp_FwdCmd := FALSE;
+            Memory.CC5_Clamp_RevCmd := TRUE; Memory.CC5_Clamp_FwdCmd := FALSE;
+            iStep := 60;
+        END_IF;
+
+    60: // UNLOADING PART 1
+        Memory.RD1_OpenCmd := TRUE; Memory.RD1_CloseCmd := FALSE;
+        
+        IF IO.RD1.i_RD_Sensor_Open THEN
+             Memory.Out_Robot_Start_Unload_1 := TRUE;
+            IF NOT Memory.Stat_Parts_Lvl1_Present THEN
+                Memory.Out_Robot_Start_Unload_1 := FALSE; // Reset Robot Request
+                iStep := 70;
+            END_IF;
+        END_IF;
+
+    70: // ROTATE & UNLOAD PART 2
+        Memory.TurnFwdCmd := TRUE; Memory.TurnRevCmd := FALSE;
+        
+        IF IO.Turn.o_Turn_FWD_SENSOR THEN
+            // Open Part 2 Clamps
+            Memory.CC2_Clamp_RevCmd := TRUE; Memory.CC2_Clamp_FwdCmd := FALSE;
+            Memory.CC4_Clamp_RevCmd := TRUE; Memory.CC4_Clamp_FwdCmd := FALSE;
+            Memory.CC6_Clamp_RevCmd := TRUE; Memory.CC6_Clamp_FwdCmd := FALSE;
+            
+            Memory.Out_Robot_Start_Unload_2 := TRUE;
+            
+            IF NOT Memory.Stat_Parts_Lvl2_Present THEN
+                Memory.Out_Robot_Start_Unload_2 := FALSE; // Reset Robot Request
+                iStep := 0; // Cycle Finished
+            END_IF;
+        END_IF;
+
+END_CASE;
+ELSE
+    // Manual mode logic
+    Memory.CC1_Clamp_FwdCmd := HMI.CC1_Clamp_FwdCmd  ;
+    Memory.CC1_Clamp_RevCmd :=HMI.CC1_Clamp_RevCmd OR HMI.Home;
+	Memory.CC2_Clamp_FwdCmd := HMI.CC2_Clamp_FwdCmd;
+    Memory.CC2_Clamp_RevCmd :=HMI.CC2_Clamp_RevCmd OR HMI.Home;
+	Memory.CC3_Clamp_FwdCmd := HMI.CC3_Clamp_FwdCmd;
+    Memory.CC3_Clamp_RevCmd :=HMI.CC3_Clamp_RevCmd OR HMI.Home;
+	Memory.CC4_Clamp_FwdCmd := HMI.CC4_Clamp_FwdCmd;
+    Memory.CC4_Clamp_RevCmd :=HMI.CC4_Clamp_RevCmd OR HMI.Home;
+	Memory.CC5_Clamp_FwdCmd := HMI.CC5_Clamp_FwdCmd;
+    Memory.CC5_Clamp_RevCmd :=HMI.CC5_Clamp_RevCmd OR HMI.Home;
+	Memory.CC6_Clamp_FwdCmd := HMI.CC6_Clamp_FwdCmd;
+    Memory.CC6_Clamp_RevCmd :=HMI.CC6_Clamp_RevCmd OR HMI.Home;
+	Memory.RD1_OpenCmd := HMI.RD1_OpenCmd;
+    Memory.RD1_CloseCmd := HMI.RD1_CloseCmd OR HMI.Home;
+	
+    Memory.RD2_OpenCmd := HMI.RD2_OpenCmd OR HMI.Home;
+    Memory.RD2_CloseCmd := HMI.RD2_CloseCmd;
+	 Memory.TurnTableFwdCmd := HMI.TurnTableFwdCmd;
+    Memory.TurnTableRevCmd := HMI.TurnTableRevCmd OR HMI.Home;
+	Memory.TurnTableRef:=HMI.TurnTableRef;
+    Memory.TurnFwdCmd := HMI.TurnFwdCmd;
+    Memory.TurnRevCmd := HMI.TurnRevCmd OR HMI.Home;
+	Memory.TurnRef:=HMI.TurnRef;
+    IF HMI.Home THEN
+	
+ iStep := 0; // reset state machine to idle
+	END_IF;
+END_IF;
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="AutoSequence">
+      <LineId Id="10" Count="0" />
+      <LineId Id="99" Count="3" />
+      <LineId Id="208" Count="1" />
+      <LineId Id="103" Count="7" />
+      <LineId Id="204" Count="0" />
+      <LineId Id="258" Count="0" />
+      <LineId Id="111" Count="5" />
+      <LineId Id="259" Count="0" />
+      <LineId Id="117" Count="27" />
+      <LineId Id="260" Count="0" />
+      <LineId Id="145" Count="3" />
+      <LineId Id="206" Count="1" />
+      <LineId Id="205" Count="0" />
+      <LineId Id="150" Count="53" />
+      <LineId Id="232" Count="3" />
+      <LineId Id="241" Count="0" />
+      <LineId Id="248" Count="0" />
+      <LineId Id="242" Count="0" />
+      <LineId Id="249" Count="0" />
+      <LineId Id="243" Count="0" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="244" Count="0" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="245" Count="0" />
+      <LineId Id="252" Count="0" />
+      <LineId Id="246" Count="0" />
+      <LineId Id="253" Count="0" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="236" Count="1" />
+      <LineId Id="254" Count="2" />
+      <LineId Id="238" Count="1" />
+      <LineId Id="257" Count="0" />
+      <LineId Id="240" Count="0" />
+      <LineId Id="270" Count="0" />
+      <LineId Id="272" Count="0" />
+      <LineId Id="271" Count="0" />
+      <LineId Id="219" Count="0" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

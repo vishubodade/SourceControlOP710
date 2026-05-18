@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="Turning_fb" Id="{a7c7060a-e039-4714-aa25-90c6d8c155fd}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK Turning_fb
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Homing sequence
+IF NOT Memory.TurnRefDone OR Memory.TurnTableRef THEN
+    Memory.TurnFwdCmd := TRUE;   // drive forward until reference
+    IF IO.Turn.o_Turn_REF_SENSOR THEN
+        Memory.TurnFwdCmd := FALSE;
+        Memory.TurnRefDone := TRUE;   // reference complete
+    END_IF;
+END_IF;
+
+// Forward rotation work 50 deg
+IF Memory.TurnFwdCmd AND Memory.TurnRefDone THEN
+    Memory.TurnRev := FALSE;   // interlock
+END_IF;
+
+IF IO.Turn.o_Turn_FWD_SENSOR THEN
+    Memory.TurnFwd := TRUE;
+END_IF;
+
+// Reverse rotation home 0 deg
+IF Memory.TurnRevCmd AND Memory.TurnRefDone THEN
+    Memory.TurnFwd := FALSE;   // interlock
+END_IF;
+
+IF IO.Turn.o_Turn_REV_SENSOR THEN
+    Memory.TurnRev := TRUE;
+END_IF;
+]]></ST>
+    </Implementation>
+    <LineIds Name="Turning_fb">
+      <LineId Id="10" Count="25" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

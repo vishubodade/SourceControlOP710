@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <DUT Name="Turn" Id="{1764e865-eb77-4298-9244-69d0e43f2811}">
+    <Declaration><![CDATA[TYPE Turn :
+STRUCT
+	o_Turn_REF_SENSOR:BOOL;
+o_Turn_FWD_SENSOR:BOOL;
+o_Turn_REV_SENSOR:BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

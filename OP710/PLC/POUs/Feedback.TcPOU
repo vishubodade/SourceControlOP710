@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.16">
+  <POU Name="Feedback" Id="{29bd7977-8d17-4f40-8c1a-3a86ff81c85a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK Feedback
+VAR_INPUT
+	In1:BOOL;
+	In2:BOOL;
+	In1Time:TIME;
+	In2Time:TIME;
+END_VAR
+VAR_OUTPUT
+	OutSens1:BOOL;
+	OutSens2: BOOL;
+END_VAR
+VAR
+	
+	SenserDelay1: TON;
+	SenserDelay2: TON;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Sensor 1 logic
+SenserDelay1(IN := In1, PT := In1Time);
+IF SenserDelay1.Q THEN
+    OutSens1 := TRUE;   // Output TurnTables ON after set seconds
+	 OutSens2 := FALSE;
+END_IF;
+
+// Sensor 2 logic
+SenserDelay2(IN := In2, PT := In2Time);
+IF SenserDelay2.Q THEN
+    OutSens2 := TRUE;   // Output TurnTables ON after set seconds
+	OutSens1 := FALSE;
+END_IF;
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="Feedback">
+      <LineId Id="33" Count="3" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="39" Count="5" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="14" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
