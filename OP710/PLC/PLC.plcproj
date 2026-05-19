@@ -95,6 +95,9 @@
     <Compile Include="POUs\Turning_fb.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\vishalTest.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\WeldRobot.TcPOU">
       <SubType>Code</SubType>
     </Compile>
