@@ -71,9 +71,6 @@
     <Compile Include="POUs\AutoSequence.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\Trial.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="POUs\Call_Fb.TcPOU">
       <SubType>Code</SubType>
     </Compile>
