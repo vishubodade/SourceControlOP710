@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Refactors>
+  <Renames>
+    <RenamedType>
+      <Type guid="1e826b02-43a8-4585-aac4-3c216eb7bfce">AUTOSEQUENCE_1</Type>
+      <From>AutoSequence_1</From>
+      <To>Trial</To>
+    </RenamedType>
+  </Renames>
+</Refactors>
